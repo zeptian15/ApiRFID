@@ -13,7 +13,7 @@ module.exports = (app) => {
     .post(presensi.presensi);
 
     // Kirimkan Pengumuman
-    app.route('/pengumuman/:kelas_tujuan')
+    app.route('/pengumuman')
     .post(presensi.pengumuman);
 
     // Buat Izin dari Android

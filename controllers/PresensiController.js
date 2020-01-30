@@ -36,7 +36,7 @@ exports.presensi = (req, res) => {
 
 exports.pengumuman = (req, res) => {
     const isi_pegumuman = req.body.isi_pegumuman;
-    const kelas_tujuan = req.params.kelas_tujuan;
+    const kelas_tujuan = req.body.kelas_tujuan;
 
     if(!isi_pegumuman || !kelas_tujuan){
         res.status(404)
