@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RFID API</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+    <style type="text/css">
+        html {
+            color: #fff;
+            background: #A770EF;
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to right, #CF8BF3, #A770EF);
+            /* Chrome 10-25, Safari 5.1-6 */
+            background: linear-gradient(to right, #CF8BF3, #A770EF);
+            /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        }
+    </style>
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title has-text-white">
+                Selamat Datang!
+            </h1>
+            <p class="subtitle has-text-white">
+                API telah Aktif!
+            </p>
+        </div>
+    </section>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+    <script>
+        var socket = io('http://localhost:3000');
+        // socket.on('rfid-data', (data) => {
+        //     console.log(data);
+        //     alert("Selamat datang!\n" + data.id_rfid + "\nMasuk : " + data.datetime)
+        // });
+        // socket.on('pengumuman', (data) => {
+        //     alert('Kepada : ' + data.kelas_tujuan + '\n' + data.isi_pengumuman)
+        // });
+        socket.on('izin', (data) => {
+            alert('Siswa Izin : ' + data.nis + '\nKeterangan : ' + data.keterangan + '\nJenis Izin : ' + data.jenis_izin + '\nTanggal : ' + data.datetime)
+        });
+    </script>
+</body>
+
+</html>
