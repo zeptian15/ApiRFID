@@ -11,7 +11,7 @@ exports.index = (req, res) => {
 
 exports.presensi = (req, res) => {
     const id_device = req.body.id_device;
-    const id_rfid = req.body.id_device;
+    const id_rfid = req.body.id_rfid;
 
     if (!id_device || !id_rfid) { // Cek apakah data ada atau tidak
         res.status(404)
@@ -75,7 +75,7 @@ exports.izin = (req, res) => {
     // Logic izin : Masuk data ke DB Sementara, lalu ubah status nya apakah approved atau denied
     var hari_ini = dateFormat(new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Jakarta'
-    }), "d-mm-yyyy")
+    }), "d-mm-yyyy HH:MM:ss")
 
     // Set Values
     var values = {
@@ -100,7 +100,7 @@ exports.kehadiran = (req, res) => {
     const quote = "Jutaan siswa tidak menyadari bahwa pergi kesekolah setiap hari bisa menjadikan kita sukses dan menghasilkan $1000 dolar hanya dengan belajar"
     const hari_ini = dateFormat(new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Jakarta'
-    }), "d-mm-yyyy")
+    }), "d-mm-yyyy HH:MM:ss")
 
     // Jalankan Query
     sqlite.all('SELECT status FROM kehadiran WHERE nis = ? AND tanggal = ? ', [nis, hari_ini], (err, rows) => {
