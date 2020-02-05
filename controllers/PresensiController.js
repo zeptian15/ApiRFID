@@ -35,22 +35,26 @@ exports.presensi = (req, res) => {
 }
 
 exports.pengumuman = (req, res) => {
-    const isi_pegumuman = req.body.isi_pegumuman;
-    const kelas_tujuan = req.body.kelas_tujuan;
+    const nama_kelas = req.body.nama_kelas; // Mis : XII RPL
+    const nomor_kelas = req.body.nomor_kelas; // Mis : 1
+    const tahun_ajaran = req.body.tahun_ajaran; // Mis : 201718
+    const isi = req.body.isi;
 
-    if(!isi_pegumuman || !kelas_tujuan){
+    if(!nama_kelas || !nomor_kelas || !tahun_ajaran || !isi){
         res.status(404)
         response.ok('Parameter is required', res)
     }
 
+    var kelas = nama_kelas + nomor_kelas + tahun_ajaran
+
     // Emmit Pengumuman ke Socket IO
     var values = {
-        'isi_pengumuman': isi_pegumuman,
-        'kelas_tujuan': kelas_tujuan
+        'isi': isi
     }
 
     // Mulai Emmit
-    socketIo.getIo().emit('pengumuman', values)
+    socketIo.getIo().emit('pengumuman/' + kelas, values)
+    console.log(kelas)
 
     response.ok(values, res)
 }
