@@ -21,7 +21,7 @@ exports.presensi = (req, res) => {
     // Kembalikan respon ke dalam bentuk Json
     var dateNow = dateFormat(new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Jakarta'
-    }), "d-mm-yyyy HH:MM:ss")
+    }), "dd-mm-yyyy HH:MM:ss")
     var values = {
         'id_rfid': id_rfid,
         'id_device': id_device,
@@ -79,7 +79,7 @@ exports.izin = (req, res) => {
     // Logic izin : Masuk data ke DB Sementara, lalu ubah status nya apakah approved atau denied
     var hari_ini = dateFormat(new Date().toLocaleString('en-US', {
         timeZone: 'Asia/Jakarta'
-    }), "d-mm-yyyy HH:MM:ss")
+    }), "DD-mm-yyyy HH:MM:ss")
 
     // Set Values
     var values = {
