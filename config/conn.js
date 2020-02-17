@@ -1,5 +1,5 @@
 var sqlite = require('sqlite3').verbose();
-var db_file = './db/absenSiswa.db';
+var db_file = './db/PBO_RFID.db';
 
 var db = new sqlite.Database(db_file, sqlite.OPEN_READWRITE, (error) => {
     if(error){

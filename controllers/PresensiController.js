@@ -4,149 +4,147 @@ var response = require('../res/res')
 var dateFormat = require('dateformat')
 var socketIo = require('../socket/socketServer')
 var sqlite = require('../config/conn');
+var moment = require('moment');
 
 exports.index = (req, res) => {
-    res.sendFile('index.html', { root: '.' });
+    res.sendFile('index.html', {
+        root: '.'
+    });
 }
 
-exports.presensi = (req, res) => {
+
+exports.presensi = async (req, res) => {
+    // Masukan ke dalam Database
     const id_device = req.body.id_device;
     const id_rfid = req.body.id_rfid;
 
     if (!id_device || !id_rfid) { // Cek apakah data ada atau tidak
         res.status(404)
         response.ok('Paramater is required!', res)
-    }
+    } else {
 
-    // Kembalikan respon ke dalam bentuk Json
-    var dateNow = dateFormat(new Date().toLocaleString('en-US', {
-        timeZone: 'Asia/Jakarta'
-    }), "dd-mm-yyyy HH:MM:ss")
-    var values = {
-        'id_rfid': id_rfid,
-        'id_device': id_device,
-        'datetime': dateNow
-    }
-    
-    socketIo.getIo().emit('rfid-data', values)
+        var tanggal = dateFormat(new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta'
+        }), "dd-mm-yyyy")
 
-    response.ok(values, res)
+        var tanggalCekTelat = dateFormat(new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta'
+        }), "yyyy-mm-dd HH:MM:ss")
 
-}
+        // Get data siswa
+        var nis_siswa = await getDataSiswa(id_rfid)
 
-exports.pengumuman = (req, res) => {
-    const nama_kelas = req.body.nama_kelas; // Mis : XII RPL
-    const nomor_kelas = req.body.nomor_kelas; // Mis : 1
-    const tahun_ajaran = req.body.tahun_ajaran; // Mis : 201718
-    const isi = req.body.isi;
+        // Cek apakah data sudah ada atau belum
+        var isExist = await cekIfTableExist(tanggal)
 
-    if(!nama_kelas || !nomor_kelas || !tahun_ajaran || !isi){
-        res.status(404)
-        response.ok('Parameter is required', res)
-    }
+        // Cek apakah Siswa Telat atau tidak
+        var status = await cekTelat(tanggalCekTelat)
 
-    var kelas = nama_kelas + nomor_kelas + tahun_ajaran
+        // Jika Table Rekapan telah ada
+        if (isExist) {
+            // Ambil Id Rekapan yang telah ada
+            var id_rekapan = await getIdRekapan(tanggal)
 
-    // Emmit Pengumuman ke Socket IO
-    var values = {
-        'isi': isi
-    }
-
-    // Mulai Emmit
-    socketIo.getIo().emit('pengumuman/' + kelas, values)
-    console.log(kelas)
-
-    response.ok(values, res)
-}
-
-exports.izin = (req, res) => {
-    // Beberapa atribut yang akan digunakan
-    // 1. NIS untuk mengidentifikasi siapa yang izin
-    // 2. Keterangan untuk mengindentifikasi Kenapa izin
-    // 3. Jenis Izin, (Sakit / Izin)
-    // 4. Waktu dan Tanggal Izin
-
-    const nis = req.body.nis
-    const keterangan = req.body.keterangan
-    const jenis_izin = req.body.jenis_izin
-
-    // Cek apakah sudah dimasukan atau belum
-    if(!nis || !keterangan || !jenis_izin){
-        res.status(404)
-        response.ok('Parameter is Required!', res)
-    }
-
-    // Logic izin : Masuk data ke DB Sementara, lalu ubah status nya apakah approved atau denied
-    var hari_ini = dateFormat(new Date().toLocaleString('en-US', {
-        timeZone: 'Asia/Jakarta'
-    }), "DD-mm-yyyy HH:MM:ss")
-
-    // Set Values
-    var values = {
-        'nis': nis,
-        'keterangan': keterangan,
-        'jenis_izin': jenis_izin,
-        'datetime': hari_ini
-    }
-
-    // Kirimkan Emit
-    socketIo.getIo().emit('izin', values)
-
-    response.ok(values, res)
-
-}
-
-exports.kehadiran = (req, res) => {
-    // Select data berdasarkan nis
-    const nis = req.body.nis
-    var pesan = ""
-    var status = ""
-    const quote = "Jutaan siswa tidak menyadari bahwa pergi kesekolah setiap hari bisa menjadikan kita sukses dan menghasilkan $1000 dolar hanya dengan belajar"
-    const hari_ini = dateFormat(new Date().toLocaleString('en-US', {
-        timeZone: 'Asia/Jakarta'
-    }), "d-mm-yyyy HH:MM:ss")
-
-    // Jalankan Query
-    sqlite.all('SELECT status FROM kehadiran WHERE nis = ? AND tanggal = ? ', [nis, hari_ini], (err, rows) => {
-        if(err){
-            console.log(err)
-            throw err
+            sqlite.run('INSERT INTO kehadiran (id_rekapan, nis, status) VALUES (?,?,?)', [id_rekapan, nis_siswa, status], (err, rows, fields) => {
+                if(err) {
+                    console.log(err)
+                    throw err
+                } else {
+                    response.ok('Data berhasil dimasukan', res)
+                }
+            })
         } else {
-            // Set Status
-            status = rows[0].status
-            
-            // Cek untuk response yang interaktif
-            if(status == "Izin"){
-                pesan = "Kamu hari ini Izin"
-            } else if(status == "Sakit"){
-                pesan = "Kamu hari ini Sakit, pastikan segera periksa ke Dokter Ya!"
+            // Buat Data baru di dalam table rekapan
+            sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
+                if(err){
+                    console.log(err)
+                    throw err
+                } else {
+                    res.status(404)
+                    response.ok('Data gagal dimasukan, coba tap kembali', res)
+                }
+            })
+        }
+
+    }
+}
+
+function cekTelat(waktu_absen) {
+    return new Promise(isTelat => {
+        setTimeout(() => {
+
+            // Get Tanggal Sekarang
+            var tanggal_sekarang = dateFormat(new Date().toLocaleString('en-US', {
+                timeZone: 'Asia/Jakarta'
+            }), "yyyy-mm-dd")
+
+            var aturan_jam_masuk = moment(tanggal_sekarang + ' 07:00:00', 'YYYY-MM-DD HH:mm:ss')
+
+            var durasi_telat = moment.duration(aturan_jam_masuk.diff(waktu_absen))
+            var minuteTelat = durasi_telat.asMinutes()
+
+            if (minuteTelat < 0) {
+                isTelat('Terlambat')
             } else {
-                pesan = "Wah kayakna kamu hari ini bolos deh"
+                isTelat('Hadir')
             }
-
-            // Masukan ke dalam values, sebelum dikirim menjadi response
-            var values = {
-                'nis': nis,
-                'pesan': pesan,
-                'status': status,
-                'quote': quote
-            }
-
-            response.ok(values, res)
-        }
-    });
+        }, 1000)
+    })
 }
 
-exports.kehadiranSemua = (req, res) => {
-    const nis = req.body.nis
+function getDataSiswa(id_rfid) {
+    return new Promise(siswa => {
+        setTimeout(() => {
+            // Jalankan Query
+            sqlite.all('SELECT * FROM siswa WHERE id_rfid = ?', [id_rfid], (err, rows, fields) => {
+                if (err) {
+                    console.log(err)
+                    throw err
+                } else {
+                    siswa(rows[0].nis)
+                }
+            })
+        }, 1000)
+    })
+}
 
-    // Jalankan Query
-    sqlite.all('SELECT * FROM kehadiran WHERE nis = ?', [nis], (err, rows) => {
-        if(err){
-            console.log(err)
-            throw err
-        } else {
-            response.ok(rows,res)
-        }
-    });
+function cekIfTableExist(tanggal) {
+    return new Promise(isExist => {
+        setTimeout(() => {
+            // Jalankan Query
+            sqlite.all('SELECT * FROM rekapan WHERE tanggal = ?', [tanggal], (err, rows, fields) => {
+                if (err) {
+                    console.log(err)
+                    throw err
+                } else {
+                    if (rows.length > 0) {
+                        isExist(true)
+                    } else {
+                        isExist(false)
+                    }
+                }
+            })
+        })
+    })
+}
+
+function getIdRekapan(tanggal) {
+    return new Promise(id_rekapan => (
+        setTimeout(() => {
+            // Jalankan Query
+            sqlite.all("SELECT id_rekapan FROM rekapan WHERE tanggal = ?", [tanggal], (err, rows, fields) => {
+                if (err) {
+                    console.log(err)
+                    throw err
+                } else {
+                    id_rekapan(rows[0].id_rekapan)
+                }
+            })
+        }, 1000)
+    ))
+}
+
+exports.backupDatabase = (req, res) => {
+    const fileDatabase = './db/PBO_RFID.db';
+    res.download(fileDatabase)
 }

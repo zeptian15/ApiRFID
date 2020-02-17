@@ -9,23 +9,10 @@ module.exports = (app) => {
     .get(presensi.index);
 
     // Post data from RFID device & Send data to Firebase
-    app.route('/rfid-data')
+    app.route('/presensi')
     .post(presensi.presensi);
 
-    // Kirimkan Pengumuman
-    app.route('/pengumuman')
-    .post(presensi.pengumuman);
-
-    // Buat Izin dari Android
-    app.route('/izin')
-    .post(presensi.izin);
-    
-    // Menampilkan status Absen siswa hari ini berdasarkan Absen
-    app.route('/kehadiran')
-    .post(presensi.kehadiran);
-
-    // Menampilkan seluruh List Absen siswa Selama yang ada pada record
-    app.route('/kehadiran/semua')
-    .post(presensi.kehadiranSemua);
+    app.route('/backup')
+    .get(presensi.backupDatabase);
 
 }
