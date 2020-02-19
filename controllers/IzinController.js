@@ -10,16 +10,22 @@ var sqlite = require('../config/conn')
 exports.getAllIzinRequest = (req, res) => {
     // Kembalikan semua List izin yang ada kepada Admin
     sqlite.all('SELECT * FROM izin', (err, rows, fields) => {
-        if(err) {
+        if (err) {
             console.log(err)
-            throw err
+            res.status(400).send({
+                status_code: 400,
+                results: 'Opps!'
+            })
         } else {
-            response.ok(rows, res)
+            res.status(200).send({
+                status_code: 200,
+                results: rows
+            })
         }
     })
 }
 
-exports.createIzinRequest =  async (req, res) => {
+exports.createIzinRequest = async (req, res) => {
     // Kelas : XIIRPL1; TahunAjaran : 2019-2020
     // Tampung parameter ke dalam Variabel
     const nis = req.body.nis
@@ -28,47 +34,87 @@ exports.createIzinRequest =  async (req, res) => {
     const keterangan = req.body.keterangan
     const status_izin = req.body.status_izin
 
-    // Tanggal di set ke Now
-    var tanggal = dateFormat(new Date().toLocaleString('en-US', {
-        timeZone: 'Asia/Jakarta'
-    }), "dd-mm-yyyy HH:MM:ss")
+    if (!nis || !kelas || !tahun_ajaran || !keterangan || !status_izin) { // Cek apakah data ada atau tidak
+        res.status(400).send({
+            status_code: 400,
+            results: 'Parameter dibutuhkan!'
+        })
+    } else {
 
-    // Masukan ke dalam Database
-    sqlite.run('INSERT INTO izin (nis, kelas, tahun_ajaran, keterangan, status_izin, tanggal) VALUES (?,?,?,?,?,?)', [nis, kelas, tahun_ajaran, keterangan, status_izin, tanggal], (err, rows, fields) => {
-        if(err){
-            console.log(err)
-            throw err
-        } else {
-            response.ok('Data berhasil dimasukan ke database!', res)
-        }
-    })
+        // Tanggal di set ke Now
+        var tanggal = dateFormat(new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta'
+        }), "yyyy-mm-dd HH:MM:ss")
+
+        // Masukan ke dalam Database
+        sqlite.run('INSERT INTO izin (nis, kelas, tahun_ajaran, keterangan, status_izin, tanggal, status_request) VALUES (?,?,?,?,?,?,?)', [nis, kelas, tahun_ajaran, keterangan, status_izin, tanggal, 'proses'], (err, rows, fields) => {
+            if (err) {
+                console.log(err)
+                res.status(400).send({
+                    status_code: 400,
+                    results: 'Data berhasil di update'
+                })
+            } else {
+                res.status(201).send({
+                    status_code: 201,
+                    results: 'Data berhasil dimasukan ke database'
+                })
+            }
+        })
+    }
 }
 
 exports.getDetailIzinRequest = (req, res) => {
     // Primary Key : ID_IZIN
-    const id_izin = req.params.id_izin
+    const id_izin = req.body.id_izin
 
-    sqlite.run('SELECT * FROM izin where id_izin = ?', [id_izin], (err, rows, fields) => {
-        if(err) {
-            console.log(err)
-            throw err
-        } else {
-            response.ok(rows, res)
-        }
-    })
+    if (!id_izin) { // Cek apakah data ada atau tidak
+        res.status(400).send({
+            status_code: 400,
+            results: 'Parameter dibutuhkan!'
+        })
+    } else {
+        // Jalankan Query
+        sqlite.run('SELECT * FROM izin where id_izin = ?', [id_izin], (err, rows, fields) => {
+            if (err) {
+                console.log(err)
+                throw err
+            } else {
+                res.status(200).send({
+                    status_code: 200,
+                    results: rows
+                })
+            }
+        })
+    }
 }
 
-exports.editIzinRequest = (res, res) => {
+exports.editIzinRequest = (req, res) => {
     // Primary Key : ID_IZIN
-    const id_izin = req.params.id_izin
+    const id_izin = req.body.id_izin
+    const status_request = req.body.status_request
 
-    // Jalankan Query untuk edit data di Database
-    sqlite.run('UPDATE izin SET status_izin = ? WHERE id_izin = ?', [id_izin], (err, rows, fields) => {
-        if(err) {
-            console.log(err)
-            throw err
-        } else {
-            response.ok('Data berhasil diubah!', res)
-        }
-    })
+    if (!id_izin || !status_request) { // Cek apakah data ada atau tidak
+        res.status(400).send({
+            status_code: 400,
+            results: 'Parameter dibutuhkan!'
+        })
+    } else {
+
+        // Jalankan Query untuk edit data di Database
+        sqlite.run('UPDATE izin SET status_request = ? WHERE id_izin = ?', [status_request, id_izin], (err, rows, fields) => {
+            if (err) {
+                console.log(err)
+                res.status(400).send({
+                    status_code: 400,
+                    results: 'Data gagal di update'
+                })
+            } else {
+                res.status(200).send({
+                    status_code: 200,
+                    results: 'Data berhasil di update'
+                })
+            }
+        })
+    }
 }

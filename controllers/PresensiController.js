@@ -19,13 +19,16 @@ exports.presensi = async (req, res) => {
     const id_rfid = req.body.id_rfid;
 
     if (!id_device || !id_rfid) { // Cek apakah data ada atau tidak
-        res.status(404)
-        response.ok('Paramater is required!', res)
+        res.status(400).send({status_code: 400, results: 'Parameter dibutuhkan!'})
     } else {
 
         var tanggal = dateFormat(new Date().toLocaleString('en-US', {
             timeZone: 'Asia/Jakarta'
-        }), "dd-mm-yyyy")
+        }), "yyyy-mm-dd")
+
+        var waktu = dateFormat(new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta'
+        }), "HH:MM")
 
         var tanggalCekTelat = dateFormat(new Date().toLocaleString('en-US', {
             timeZone: 'Asia/Jakarta'
@@ -40,30 +43,50 @@ exports.presensi = async (req, res) => {
         // Cek apakah Siswa Telat atau tidak
         var status = await cekTelat(tanggalCekTelat)
 
-        // Jika Table Rekapan telah ada
-        if (isExist) {
-            // Ambil Id Rekapan yang telah ada
-            var id_rekapan = await getIdRekapan(tanggal)
+        // Variabel waktu
 
-            sqlite.run('INSERT INTO kehadiran (id_rekapan, nis, status) VALUES (?,?,?)', [id_rekapan, nis_siswa, status], (err, rows, fields) => {
-                if(err) {
-                    console.log(err)
-                    throw err
-                } else {
-                    response.ok('Data berhasil dimasukan', res)
-                }
-            })
+        // Jika Siswa Ada 
+        if (nis_siswa != null) {
+            // Jika Table Rekapan telah ada
+            if (isExist) {
+                // Ambil Id Rekapan yang telah ada
+                var id_rekapan = await getIdRekapan(tanggal)
+
+                sqlite.run('INSERT INTO kehadiran (id_rekapan, nis, waktu, status) VALUES (?,?,?,?)', [id_rekapan, nis_siswa, waktu, status], (err, rows, fields) => {
+                    if (err) {
+                        console.log(err)
+                        throw err
+                    } else {
+                        response.ok('Data berhasil dimasukan', res)
+                    }
+                })
+            } else {
+                // Buat Data baru di dalam table rekapan
+                sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
+                    if (err) {
+                        console.log(err)
+                        throw err
+                    } else {
+                        res.status(404)
+                        response.ok('Data gagal dimasukan, coba tap kembali', res)
+                    }
+                })
+            }
         } else {
-            // Buat Data baru di dalam table rekapan
-            sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
-                if(err){
-                    console.log(err)
-                    throw err
-                } else {
-                    res.status(404)
-                    response.ok('Data gagal dimasukan, coba tap kembali', res)
-                }
-            })
+            // Jika Table Rekapan telah ada
+            if (isExist) {
+                res.status(404).send({msg: 'Opps kamu ngga terdaftar nih!'})
+            } else {
+                // Buat Data baru di dalam table rekapan
+                sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
+                    if (err) {
+                        console.log(err)
+                        throw err
+                    } else {
+                        res.status(404).send({msg: 'Opps kamu ngga terdaftar nih!'})
+                    }
+                })
+            }
         }
 
     }
@@ -101,7 +124,11 @@ function getDataSiswa(id_rfid) {
                     console.log(err)
                     throw err
                 } else {
-                    siswa(rows[0].nis)
+                    if(rows[0] != null){
+                        siswa(rows[0].nis)
+                    } else {
+                        siswa(null)
+                    }
                 }
             })
         }, 1000)
