@@ -13,12 +13,17 @@ exports.getTodayKehadiranLimit = async (req, res) => {
     var siswaTepat = await getJumlahStatistik('Tepat', tanggal)
     var siswaTelat = await getJumlahStatistik('Terlambat', tanggal)
     // Jalankan Query
-    sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC LIMIT 5', [tanggal],(err, rows, fields) => {
-        if(err){
+    sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC LIMIT 5', [tanggal], (err, rows, fields) => {
+        if (err) {
             console.log(err)
             throw err
         } else {
-            res.status(200).send({status_code: 200, siswaTepat: siswaTepat, siswaTelat: siswaTelat , results: rows})
+            res.status(200).send({
+                status_code: 200,
+                siswaTepat: siswaTepat,
+                siswaTelat: siswaTelat,
+                results: rows
+            })
         }
     })
 }
@@ -33,21 +38,54 @@ exports.getTodayKehadiranAll = async (req, res) => {
     var siswaTepat = await getJumlahStatistik('Tepat', tanggal)
     var siswaTelat = await getJumlahStatistik('Terlambat', tanggal)
     // Jalankan Query
-    sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal],(err, rows, fields) => {
-        if(err){
+    sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal], (err, rows, fields) => {
+        if (err) {
             console.log(err)
             throw err
         } else {
-            res.status(200).send({status_code: 200, siswaTepat: siswaTepat, siswaTelat: siswaTelat , results: rows})
+            res.status(200).send({
+                status_code: 200,
+                siswaTepat: siswaTepat,
+                siswaTelat: siswaTelat,
+                results: rows
+            })
         }
     })
 }
 
-function getJumlahStatistik(status, tanggal){
+exports.getTodayKehadiranAllFilter = (req, res) => {
+    const kelas = req.body.kelas
+    const status = req.body.status
+
+    if (!kelas || !status) {
+        res.status(404).send({
+            status_code: 404,
+            results: 'Parameter dibutuhkan!'
+        })
+    } else {
+        var tanggal = dateFormat(new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta'
+        }), "yyyy-mm-dd")
+        // Jalankan Query
+        sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? AND kelas = ? AND status = ? ORDER BY waktu DESC', [tanggal, kelas, status], (err, rows, fields) => {
+            if (err) {
+                console.log(err)
+                throw err
+            } else {
+                res.status(200).send({
+                    status_code: 200,
+                    results: rows
+                })
+            }
+        })
+    }
+}
+
+function getJumlahStatistik(status, tanggal) {
     return new Promise(statistik => {
         // Jalankan Query
         sqlite.all('SELECT * FROM kehadiran INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE status = ? AND tanggal = ?', [status, tanggal], (err, rows, fields) => {
-            if(err){
+            if (err) {
                 console.log(err)
                 throw err
             } else {

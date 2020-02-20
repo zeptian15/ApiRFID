@@ -19,7 +19,10 @@ exports.presensi = async (req, res) => {
     const id_rfid = req.body.id_rfid;
 
     if (!id_device || !id_rfid) { // Cek apakah data ada atau tidak
-        res.status(400).send({status_code: 400, results: 'Parameter dibutuhkan!'})
+        res.status(400).send({
+            status_code: 400,
+            results: 'Parameter dibutuhkan!'
+        })
     } else {
 
         var tanggal = dateFormat(new Date().toLocaleString('en-US', {
@@ -58,6 +61,8 @@ exports.presensi = async (req, res) => {
                         throw err
                     } else {
                         response.ok('Data berhasil dimasukan', res)
+                        socketIo.getIo().emit('new-data', true)
+                        console.log('Emit')
                     }
                 })
             } else {
@@ -75,7 +80,9 @@ exports.presensi = async (req, res) => {
         } else {
             // Jika Table Rekapan telah ada
             if (isExist) {
-                res.status(404).send({msg: 'Opps kamu ngga terdaftar nih!'})
+                res.status(404).send({
+                    msg: 'Opps kamu ngga terdaftar nih!'
+                })
             } else {
                 // Buat Data baru di dalam table rekapan
                 sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
@@ -83,7 +90,9 @@ exports.presensi = async (req, res) => {
                         console.log(err)
                         throw err
                     } else {
-                        res.status(404).send({msg: 'Opps kamu ngga terdaftar nih!'})
+                        res.status(404).send({
+                            msg: 'Opps kamu ngga terdaftar nih!'
+                        })
                     }
                 })
             }
@@ -124,7 +133,7 @@ function getDataSiswa(id_rfid) {
                     console.log(err)
                     throw err
                 } else {
-                    if(rows[0] != null){
+                    if (rows[0] != null) {
                         siswa(rows[0].nis)
                     } else {
                         siswa(null)

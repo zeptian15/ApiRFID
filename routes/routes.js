@@ -9,46 +9,50 @@ module.exports = (app) => {
 
     // Halaman Home
     app.route('/')
-    .get(presensi.index);
+        .get(presensi.index);
 
     // Post data from RFID device
     app.route('/presensi')
-    .post(presensi.presensi);
+        .post(presensi.presensi);
 
     // Backup Database
     app.route('/backup')
-    .get(presensi.backupDatabase);
+        .get(presensi.backupDatabase);
 
     // Get Today Kehadiran
     app.route('/kehadiran')
-    .get(kehadiran.getTodayKehadiranLimit)
+        .get(kehadiran.getTodayKehadiranLimit)
 
     // Get Today Kehadiran Semua
     app.route('/kehadiran/semua')
-    .get(kehadiran.getTodayKehadiranAll)
+        .get(kehadiran.getTodayKehadiranAll)
+
+    // Get kehadiran berdasarkan Filter
+    app.route('/kehadiran/filter')
+        .post(kehadiran.getTodayKehadiranAllFilter)
 
     // Rekap data presensi harian
     app.route('/rekap/harian')
-    .post(rekapan.rekapharian)
+        .post(rekapan.rekapharian)
 
     // Rekap data presensi bulanan
     app.route('/rekap/bulanan')
-    .post(rekapan.rekapBulanan)
+        .post(rekapan.rekapBulanan)
 
     // Get All Izin Request
     app.route('/izin')
-    .get(izin.getAllIzinRequest)
+        .get(izin.getAllIzinRequest)
 
     // Get detail Izin Request
     app.route('/izin/detail')
-    .post(izin.getDetailIzinRequest)
+        .post(izin.getDetailIzinRequest)
 
     // Create Izin Request
     app.route('/izin/create')
-    .post(izin.createIzinRequest)
+        .post(izin.createIzinRequest)
 
     // Edit Izin Request
     app.route('/izin/edit')
-    .patch(izin.editIzinRequest)
+        .patch(izin.editIzinRequest)
 
 }
