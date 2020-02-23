@@ -10,6 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "dateformat": "^3.0.3",
+    "email-validator": "^2.0.4",
     "express": "^4.17.1",
     "firebase-admin": "^8.9.1",
     "moment": "^2.24.0",

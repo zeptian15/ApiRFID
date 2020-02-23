@@ -15,8 +15,10 @@ exports.getTodayKehadiranLimit = async (req, res) => {
     // Jalankan Query
     sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC LIMIT 5', [tanggal], (err, rows, fields) => {
         if (err) {
-            console.log(err)
-            throw err
+            res.status(404).send({
+                status_code: 404,
+                msg: 'Data not found'
+            })
         } else {
             res.status(200).send({
                 status_code: 200,
@@ -40,8 +42,10 @@ exports.getTodayKehadiranAll = async (req, res) => {
     // Jalankan Query
     sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal], (err, rows, fields) => {
         if (err) {
-            console.log(err)
-            throw err
+            res.status(404).send({
+                status_code: 404,
+                msg: 'Data not found'
+            })
         } else {
             res.status(200).send({
                 status_code: 200,
@@ -60,7 +64,7 @@ exports.getTodayKehadiranAllFilter = (req, res) => {
     if (!kelas || !status) {
         res.status(404).send({
             status_code: 404,
-            results: 'Parameter dibutuhkan!'
+            msg: 'Parameter is required'
         })
     } else {
         var tanggal = dateFormat(new Date().toLocaleString('en-US', {
@@ -69,8 +73,10 @@ exports.getTodayKehadiranAllFilter = (req, res) => {
         // Jalankan Query
         sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? AND kelas = ? AND status = ? ORDER BY waktu DESC', [tanggal, kelas, status], (err, rows, fields) => {
             if (err) {
-                console.log(err)
-                throw err
+                res.status(404).send({
+                    status_code: 404,
+                    msg: 'Data not found'
+                })
             } else {
                 res.status(200).send({
                     status_code: 200,
@@ -93,4 +99,91 @@ function getJumlahStatistik(status, tanggal) {
             }
         })
     })
+}
+
+// Kehadiran Berdasarkan id_rekapan
+exports.getKehadiranByIdRekapan = (req, res) => {
+    const id_rekapan = req.body.id_rekapan
+
+    // Validasi 
+    if (!id_rekapan) {
+        res.status(404).send({
+            status_code: 404,
+            msg: 'Parameter is required'
+        })
+    } else {
+        // Jalanakan Query
+        sqlite.all('SELECT * FROM kehadiran INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE rekapan.id_rekapan = ?', [id_rekapan], (err, rows, fields) => {
+            if (err) {
+                res.status(404).send({
+                    status_code: 404,
+                    msg: 'Data not found'
+                })
+            } else {
+                res.status(200).send({
+                    status_code: 200,
+                    results: rows
+                })
+            }
+        })
+    }
+}
+
+// Kehadiran Berdasarkan NIS Semua
+exports.getAllKehadiranByNis = (req, res) => {
+    const nis = req.body.nis
+
+    // Validasi
+    if (!nis) {
+        res.status(404).send({
+            status_code: 404,
+            msg: 'Parameter is required'
+        })
+    } else {
+        // Jalankan Query
+        sqlite.all('SELECT * FROM kehadiran INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE nis = ?', [nis], (err, rows, fields) => {
+            if (err) {
+                res.status(404).send({
+                    status_code: 404,
+                    msg: 'Data not found'
+                })
+            } else {
+                res.status(200).send({
+                    status_code: 200,
+                    results: rows
+                })
+            }
+        })
+    }
+}
+
+// Kehadiran Berdasarkan NIS Hari Ini
+exports.getTodayKehadiranByNis = (req, res) => {
+    const nis = req.body.nis
+
+    // Validasi
+    if (!nis) {
+        res.status(404).send({
+            status_code: 404,
+            msg: 'Parameter is required'
+        })
+    } else {
+        var tanggal = dateFormat(new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Jakarta'
+        }), "yyyy-mm-dd")
+        // Jalankan Query
+        sqlite.all('SELECT * FROM kehadiran INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE nis = ? AND tanggal = ?', [nis, tanggal], (err, rows, fields) => {
+            if (err) {
+                res.status(404).send({
+                    status_code: 404,
+                    msg: 'Data not found'
+                })
+            } else {
+                res.status(200).send({
+                    status_code: 200,
+                    results: rows
+                })
+            }
+        })
+    }
 }

@@ -19,9 +19,9 @@ exports.presensi = async (req, res) => {
     const id_rfid = req.body.id_rfid;
 
     if (!id_device || !id_rfid) { // Cek apakah data ada atau tidak
-        res.status(400).send({
-            status_code: 400,
-            results: 'Parameter dibutuhkan!'
+        res.status(404).send({
+            status_code: 404,
+            msg: 'Parameter is required'
         })
     } else {
 
@@ -57,23 +57,31 @@ exports.presensi = async (req, res) => {
 
                 sqlite.run('INSERT INTO kehadiran (id_rekapan, nis, waktu, status) VALUES (?,?,?,?)', [id_rekapan, nis_siswa, waktu, status], (err, rows, fields) => {
                     if (err) {
-                        console.log(err)
-                        throw err
+                        res.status(404).send({
+                            status_code: 404,
+                            msg: 'Data gagal dimasukan'
+                        })
                     } else {
-                        response.ok('Data berhasil dimasukan', res)
+                        res.status(404).send({
+                            status_code: 404,
+                            msg: 'Data berhasil dimasukan'
+                        })
                         socketIo.getIo().emit('new-data', true)
-                        console.log('Emit')
                     }
                 })
             } else {
                 // Buat Data baru di dalam table rekapan
                 sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
                     if (err) {
-                        console.log(err)
-                        throw err
+                        res.status(404).send({
+                            status_code: 404,
+                            msg: 'Data gagal dimasukan'
+                        })
                     } else {
-                        res.status(404)
-                        response.ok('Data gagal dimasukan, coba tap kembali', res)
+                        res.status(200).send({
+                            status_code: 200,
+                            msg: 'Table berhasil dibuat, silahkan tap untuk mulai presensi'
+                        })
                     }
                 })
             }
@@ -81,17 +89,20 @@ exports.presensi = async (req, res) => {
             // Jika Table Rekapan telah ada
             if (isExist) {
                 res.status(404).send({
-                    msg: 'Opps kamu ngga terdaftar nih!'
+                    msg: 'Maaf kamu tidak terdaftar'
                 })
             } else {
                 // Buat Data baru di dalam table rekapan
                 sqlite.run('INSERT INTO rekapan (tanggal) VALUES (?)', [tanggal], (err, rows, fields) => {
                     if (err) {
-                        console.log(err)
-                        throw err
+                        res.status(404).send({
+                            status_code: 404,
+                            msg: 'Data gagal dimasukan'
+                        })
                     } else {
                         res.status(404).send({
-                            msg: 'Opps kamu ngga terdaftar nih!'
+                            status_code: 404,
+                            msg: 'Maaf kamu tidak terdaftar'
                         })
                     }
                 })

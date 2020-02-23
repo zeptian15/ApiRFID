@@ -1,8 +1,7 @@
 'use strict';
 
-var response = require('../res/res')
-var dateFormat = require('dateformat')
-var sqlite = require('../config/conn')
+const dateFormat = require('dateformat')
+const sqlite = require('../config/conn')
 
 /*
     Pada Controller ini akan menangani request untuk izin yang nantinya akan di request dari siswa
@@ -12,9 +11,9 @@ exports.getAllIzinRequest = (req, res) => {
     sqlite.all('SELECT * FROM izin', (err, rows, fields) => {
         if (err) {
             console.log(err)
-            res.status(400).send({
-                status_code: 400,
-                results: 'Opps!'
+            res.status(404).send({
+                status_code: 404,
+                msg: 'Data not found'
             })
         } else {
             res.status(200).send({
@@ -37,7 +36,7 @@ exports.createIzinRequest = async (req, res) => {
     if (!nis || !kelas || !tahun_ajaran || !keterangan || !status_izin) { // Cek apakah data ada atau tidak
         res.status(400).send({
             status_code: 400,
-            results: 'Parameter dibutuhkan!'
+            msg: 'Parameter is required'
         })
     } else {
 
@@ -52,12 +51,12 @@ exports.createIzinRequest = async (req, res) => {
                 console.log(err)
                 res.status(400).send({
                     status_code: 400,
-                    results: 'Data berhasil di update'
+                    msg: 'Data gagal dimasukan'
                 })
             } else {
                 res.status(201).send({
                     status_code: 201,
-                    results: 'Data berhasil dimasukan ke database'
+                    msg: 'Data berhasil dimasukan'
                 })
             }
         })
@@ -69,16 +68,18 @@ exports.getDetailIzinRequest = (req, res) => {
     const id_izin = req.body.id_izin
 
     if (!id_izin) { // Cek apakah data ada atau tidak
-        res.status(400).send({
-            status_code: 400,
-            results: 'Parameter dibutuhkan!'
+        res.status(404).send({
+            status_code: 404,
+            msg: 'Parameter is required'
         })
     } else {
         // Jalankan Query
         sqlite.run('SELECT * FROM izin where id_izin = ?', [id_izin], (err, rows, fields) => {
             if (err) {
-                console.log(err)
-                throw err
+                res.status(404).send({
+                    status_code: 404,
+                    msg: 'Data not found'
+                })
             } else {
                 res.status(200).send({
                     status_code: 200,
@@ -95,8 +96,8 @@ exports.editIzinRequest = (req, res) => {
     const status_request = req.body.status_request
 
     if (!id_izin || !status_request) { // Cek apakah data ada atau tidak
-        res.status(400).send({
-            status_code: 400,
+        res.status(404).send({
+            status_code: 404,
             results: 'Parameter dibutuhkan!'
         })
     } else {
@@ -105,8 +106,8 @@ exports.editIzinRequest = (req, res) => {
         sqlite.run('UPDATE izin SET status_request = ? WHERE id_izin = ?', [status_request, id_izin], (err, rows, fields) => {
             if (err) {
                 console.log(err)
-                res.status(400).send({
-                    status_code: 400,
+                res.status(404).send({
+                    status_code: 404,
                     results: 'Data gagal di update'
                 })
             } else {
