@@ -104,7 +104,7 @@ exports.updatePengumuman = (req, res) => {
         // Tanggal di set ke Now
         var tanggal = dateFormat(new Date().toLocaleString('en-US', {
             timeZone: 'Asia/Jakarta'
-        }), "dd-mm-yyyy HH:MM:ss")
+        }), "yyyy-mm-dd HH:MM:ss")
 
         // Masukan ke dalam Database
         sqlite.run('UPDATE pengumuman SET kelas = ?, tahun_ajaran = ?, isi = ?, author = ?, tanggal = ?  WHERE id_pengumuman = ?', [kelas, tahun_ajaran, isi, author, tanggal, id_pengumuman], (err, rows, field) => {
