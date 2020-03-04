@@ -14,7 +14,7 @@ exports.rekapharian = (req, res) => {
         })
     } else {
         // Jalankan Query
-        sqlite.all('SELECT * FROM kehadiran INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ', [tanggal], (err, rows, fields) => {
+        sqlite.all('SELECT * FROM kehadiran INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ?', [tanggal], (err, rows, fields) => {
             if (err) {
                 console.log(err)
                 res.status(404).send({

@@ -16,7 +16,7 @@ exports.getKelasPengumuman = (req, res) => {
         })
     } else {
         // Ambil data berdasarkan data yang di request
-        sqlite.all('SELECT * FROM penguman WHERE kelas = ?, tahun_ajaran = ?', [kelas, tahun_ajaran], (err, rows, fields) => {
+        sqlite.all('SELECT * FROM pengumuman WHERE kelas = ?, tahun_ajaran = ?', [kelas, tahun_ajaran], (err, rows, fields) => {
             if (err) {
                 res.status(404).send({
                     status_code: 404,
