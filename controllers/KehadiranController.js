@@ -13,7 +13,7 @@ exports.getTodayKehadiranLimit = async (req, res) => {
     var siswaTepat = await getJumlahStatistik('Tepat', tanggal)
     var siswaTelat = await getJumlahStatistik('Terlambat', tanggal)
     // Jalankan Query
-    sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC LIMIT 5', [tanggal], (err, rows, fields) => {
+    sqlite.all('SELECT siswa.nis, nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC LIMIT 5', [tanggal], (err, rows, fields) => {
         if (err) {
             res.status(404).send({
                 status_code: 404,
@@ -40,7 +40,7 @@ exports.getTodayKehadiranAll = async (req, res) => {
     var siswaTepat = await getJumlahStatistik('Tepat', tanggal)
     var siswaTelat = await getJumlahStatistik('Terlambat', tanggal)
     // Jalankan Query
-    sqlite.all('SELECT nis, nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal], (err, rows, fields) => {
+    sqlite.all('SELECT siswa.nis, nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal], (err, rows, fields) => {
         if (err) {
             res.status(404).send({
                 status_code: 404,
@@ -71,7 +71,7 @@ exports.getTodayKehadiranAllFilter = (req, res) => {
             timeZone: 'Asia/Jakarta'
         }), "yyyy-mm-dd")
         // Jalankan Query
-        sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? AND kelas = ? AND status = ? ORDER BY waktu DESC', [tanggal, kelas, status], (err, rows, fields) => {
+        sqlite.all('SELECT siswa.nis, nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? AND kelas = ? AND status = ? ORDER BY waktu DESC', [tanggal, kelas, status], (err, rows, fields) => {
             if (err) {
                 res.status(404).send({
                     status_code: 404,
