@@ -39,6 +39,7 @@ exports.presensi = async (req, res) => {
 
         // Get data siswa
         var nis_siswa = await getDataSiswa(id_rfid)
+        var nama_siswa = await getNamaSiswa(id_rfid)
 
         // Cek apakah data sudah ada atau belum
         var isExist = await cekIfTableExist(tanggal)
@@ -66,7 +67,7 @@ exports.presensi = async (req, res) => {
                             status_code: 404,
                             msg: 'Data berhasil dimasukan'
                         })
-                        socketIo.getIo().emit('new-data', true)
+                        socketIo.getIo().emit('new-data', nama_siswa)
                     }
                 })
             } else {
@@ -146,6 +147,25 @@ function getDataSiswa(id_rfid) {
                 } else {
                     if (rows[0] != null) {
                         siswa(rows[0].nis)
+                    } else {
+                        siswa(null)
+                    }
+                }
+            })
+        }, 1000)
+    })
+}
+function getNamaSiswa(id_rfid) {
+    return new Promise(siswa => {
+        setTimeout(() => {
+            // Jalankan Query
+            sqlite.all('SELECT * FROM siswa WHERE id_rfid = ?', [id_rfid], (err, rows, fields) => {
+                if (err) {
+                    console.log(err)
+                    throw err
+                } else {
+                    if (rows[0] != null) {
+                        siswa(rows[0].nama)
                     } else {
                         siswa(null)
                     }

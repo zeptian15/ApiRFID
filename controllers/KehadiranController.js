@@ -40,7 +40,7 @@ exports.getTodayKehadiranAll = async (req, res) => {
     var siswaTepat = await getJumlahStatistik('Tepat', tanggal)
     var siswaTelat = await getJumlahStatistik('Terlambat', tanggal)
     // Jalankan Query
-    sqlite.all('SELECT nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal], (err, rows, fields) => {
+    sqlite.all('SELECT nis, nama, kelas, waktu, status, tanggal FROM kehadiran INNER JOIN siswa ON siswa.nis = kehadiran.nis INNER JOIN rekapan ON rekapan.id_rekapan = kehadiran.id_rekapan WHERE tanggal = ? ORDER BY waktu DESC', [tanggal], (err, rows, fields) => {
         if (err) {
             res.status(404).send({
                 status_code: 404,
