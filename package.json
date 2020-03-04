@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "API for RFID Java Application",
   "engines": {
-    "node": "12.16.1"
+    "node": "12.16.1",
+    "npm": "6.13.4"
   },
   "main": "index.js",
   "scripts": {
