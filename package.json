@@ -2,6 +2,9 @@
   "name": "api-rfid",
   "version": "1.0.0",
   "description": "API for RFID Java Application",
+  "engines": {
+    "node": "12.16.1"
+  },
   "main": "index.js",
   "scripts": {
     "start": "node server.js"
