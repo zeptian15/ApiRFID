@@ -33,8 +33,10 @@ exports.getKelasPengumuman = (req, res) => {
 }
 
 exports.getAllPengumuman = (req, res) => {
+    const kelas = 'ALL'
+    const tahun_ajaran = 'ALL'
     // Jalankan Query
-    sqlite.all('SELECT * FROM pengumuman', (err, rows, field) => {
+    sqlite.all('SELECT * FROM pengumuman WHERE kelas = ? AND tahun_ajaran = ?', [kelas, tahun_ajaran], (err, rows, field) => {
         if (err) {
             res.status(404).send({
                 status_code: 404,
