@@ -84,9 +84,17 @@ module.exports = (app) => {
     app.route('/pengumuman')
     .get(pengumuman.getAllPengumuman)
 
+    // Get All Pengumuman Hari Ini
+    app.route('/pengumuman/today')
+    .get(pengumuman.getTodayAllPengumuman)
+
     // Get Pengumuman Per Kelas
     app.route('/pengumuman/kelas')
     .post(pengumuman.getKelasPengumuman)
+
+    // Get Pengumuman Per Kelas
+    app.route('/pengumuman/kelas/today')
+    .post(pengumuman.getTodayKelasPengumuman)
 
     // Create Pengumuman
     app.route('/pengumuman')
